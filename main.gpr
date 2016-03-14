@@ -1,0 +1,37 @@
+project Main is
+
+   for Languages use ("ada");
+   for Source_Dirs use ("src");
+   for Main use ("main.adb");
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+
+   -- -f (Force recompilations)
+   -- Force the complete processing of all phases (or of those explicitly specified) even when up to date.
+
+   -- -d (Display progress)
+   -- Display progress for each source, up to date or not, as a single line completed x out of y (zz%).... If the file needs to be compiled this is displayed after the invocation of the compiler. These lines are displayed even in quiet output mode (switch -q).
+
+   -- -v (Verbose output)
+   -- Display full paths, all options used in spawned processes, and reasons why these processes are spawned. Cancel any previous switch -q.
+
+   -- -p or --create-missing-dirs (Create missing object, library and exec directories)
+
+   package Builder is
+      for Default_Switches ("ada") use ("-v", "-f", "-d");
+   end Builder;
+
+   -- "-gnatwa"
+   -- Activate all optional errors.
+   -- This switch activates most optional warning messages, see remaining list in this section for details on optional warning messages that can be individually controlled.
+   -- The warnings that are not turned on by this switch are -gnatwd (implicit dereferencing), -gnatwh (hiding), and -gnatwl (elaboration warnings).
+   -- All other optional warnings are turned on.
+
+   -- "-gnatf"
+   -- Full errors. Multiple errors per line, all undefined references, do not attempt to suppress cascaded errors.
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnata", "-gnatwa", "-gnatf");
+   end Compiler;
+
+end Main;

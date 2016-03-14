@@ -1,0 +1,16 @@
+*.o
+*.ali
+*.exe
+*.bexch
+*.cgpr
+*.lexch
+*.db
+*.xml
+*.a
+*.db-wal
+*.db-shm
+*.#*
+*.xml
+*.TMP
+b_*
+b~*
