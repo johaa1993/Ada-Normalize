@@ -6,24 +6,38 @@ with Ada.Integer_Text_IO;
 procedure Main is
 
    package Commands is
-      type Command is (Unknown, Help, Show, New_File, Replace);
+      type Command is (Unknown, Show_Help, Show_Result, Create_New_File, Replace_File);
       package IO is new Ada.Text_IO.Enumeration_IO (Command);
    end;
 
    function Get_Command return Commands.Command is
       use Ada.Command_Line;
    begin
-      if Argument (1) = "Help" then
-         return Commands.Help;
-      elsif Argument (1) = "Show" then
-         return Commands.Show;
-      elsif Argument (1) = "New_File" then
-         return Commands.New_File;
-      elsif Argument (1) = "Replace" then
-         return Commands.Replace;
+      if Argument (1) = "help" then
+         return Commands.Show_Help;
+      elsif Argument (1) = "show" then
+         return Commands.Show_Result;
+      elsif Argument (1) = "create" then
+         return Commands.Create_New_File;
+      elsif Argument (1) = "replace" then
+         return Commands.Replace_File;
       else
          return Commands.Unknown;
       end if;
+   end;
+
+   function Get_Command_Help (X : Commands.Command) return String is
+   begin
+      case X is
+         when Commands.Show_Result =>
+            return "show    <Scale> <File_Name>";
+         when Commands.Create_New_File =>
+            return "create  <Scale> <File_Name> <File_Name>";
+         when Commands.Replace_File =>
+            return "replace <Scale> <File_Name>";
+         when others =>
+            return "";
+      end case;
    end;
 
    type Vector is array (Integer range <>) of Float;
@@ -84,6 +98,17 @@ procedure Main is
       end loop;
    end;
 
+   procedure Help is
+   begin
+      for I in Commands.Command loop
+         Ada.Integer_Text_IO.Put (I'Enum_Rep, 3);
+         Ada.Text_IO.Put (" ");
+         Commands.IO.Put (I, Commands.Command'Width + 1);
+         Ada.Text_IO.Put (Get_Command_Help (I));
+         Ada.Text_IO.New_Line;
+      end loop;
+   end;
+
    X : Vector (1 .. 200);
    Last : Integer;
    Min : Float := Float'Last;
@@ -92,7 +117,7 @@ procedure Main is
 begin
 
    case Get_Command is
-      when Commands.Show =>
+      when Commands.Show_Result =>
          Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
          Put (X (X'First .. Last));
          Ada.Text_IO.New_Line;
@@ -105,23 +130,19 @@ begin
          Ada.Text_IO.Put_Line ("Normalize ");
          Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
          Put (X (X'First .. Last));
-      when Commands.New_File =>
+      when Commands.Create_New_File =>
          Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
          Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
          Write (Ada.Command_Line.Argument (4), X (X'First .. Last));
-      when Commands.Replace =>
+      when Commands.Replace_File =>
          Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
          Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
          Write (Ada.Command_Line.Argument (3), X (X'First .. Last));
-      when Commands.Help =>
-         for I in Commands.Command loop
-            Ada.Integer_Text_IO.Put (I'Enum_Rep, 3);
-            Ada.Text_IO.Put (" ");
-            Commands.IO.Put (I);
-            Ada.Text_IO.New_Line;
-         end loop;
+      when Commands.Show_Help =>
+         Help;
       when others =>
          Ada.Text_IO.Put_Line ("Unsupported command");
+         Help;
    end case;
 
 
