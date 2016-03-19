@@ -10,16 +10,15 @@ procedure Main is
       package IO is new Ada.Text_IO.Enumeration_IO (Command);
    end;
 
-   function Get_Command return Commands.Command is
-      use Ada.Command_Line;
+   function Get_Command (Name : String) return Commands.Command is
    begin
-      if Argument (1) = "help" then
+      if Name = "help" then
          return Commands.Show_Help;
-      elsif Argument (1) = "show" then
+      elsif Name = "show" then
          return Commands.Show_Result;
-      elsif Argument (1) = "create" then
+      elsif Name = "create" then
          return Commands.Create_New_File;
-      elsif Argument (1) = "replace" then
+      elsif Name = "replace" then
          return Commands.Replace_File;
       else
          return Commands.Unknown;
@@ -99,53 +98,87 @@ procedure Main is
    end;
 
    procedure Help is
+      use Ada.Text_IO;
+      use Ada.Integer_Text_IO;
+      use Commands;
+      use Commands.IO;
    begin
-      for I in Commands.Command loop
-         Ada.Integer_Text_IO.Put (I'Enum_Rep, 3);
-         Ada.Text_IO.Put (" ");
-         Commands.IO.Put (I, Commands.Command'Width + 1);
-         Ada.Text_IO.Put (Get_Command_Help (I));
-         Ada.Text_IO.New_Line;
+      for I in Command loop
+         Put (I'Enum_Rep, 3);
+         Put (" ");
+         Put (I, Command'Width + 1);
+         Put (Get_Command_Help (I));
+         New_Line;
       end loop;
    end;
 
-   X : Vector (1 .. 200);
+   X : Vector (1 .. 10000);
    Last : Integer;
    Min : Float := Float'Last;
    Max : Float := Float'First;
 
 begin
 
-   case Get_Command is
+   case Get_Command (Ada.Command_Line.Argument (1)) is
       when Commands.Show_Result =>
-         Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
-         Put (X (X'First .. Last));
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put ("Min ");
-         Ada.Float_Text_IO.Put (Min, 3, 3, 0);
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put ("Max ");
-         Ada.Float_Text_IO.Put (Max, 3, 3, 0);
-         Ada.Text_IO.New_Line (2);
-         Ada.Text_IO.Put_Line ("Normalize ");
-         Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
-         Put (X (X'First .. Last));
+         declare
+            use Ada.Text_IO;
+            use Ada.Float_Text_IO;
+            use Ada.Command_Line;
+         begin
+            if Argument_Count < 3 then
+               raise Program_Error with "Argument_Count < 3";
+            end if;
+            Read (Argument (3), X, Last, Min, Max);
+            Put (X (X'First .. Last));
+            New_Line;
+            Put ("Min ");
+            Put (Min, 3, 3, 0);
+            New_Line;
+            Put ("Max ");
+            Put (Max, 3, 3, 0);
+            New_Line (2);
+            Put_Line ("Normalize ");
+            Normalize (Min, Max, Float'Value (Argument (2)), X (X'First .. Last));
+            Put (X (X'First .. Last));
+         end;
+
       when Commands.Create_New_File =>
-         Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
-         Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
-         Write (Ada.Command_Line.Argument (4), X (X'First .. Last));
+         declare
+            use Ada.Command_Line;
+         begin
+            if Argument_Count < 4 then
+               raise Program_Error with "Argument_Count < 4";
+            end if;
+            Read (Argument (3), X, Last, Min, Max);
+            Normalize (Min, Max, Float'Value (Argument (2)), X (X'First .. Last));
+            Write (Argument (4), X (X'First .. Last));
+         end;
+
       when Commands.Replace_File =>
-         Read (Ada.Command_Line.Argument (3), X, Last, Min, Max);
-         Normalize (Min, Max, Float'Value (Ada.Command_Line.Argument (2)), X (X'First .. Last));
-         Write (Ada.Command_Line.Argument (3), X (X'First .. Last));
+         declare
+            use Ada.Command_Line;
+         begin
+            if Argument_Count < 3 then
+               raise Program_Error with "Argument_Count < 4";
+            end if;
+            Read (Argument (3), X, Last, Min, Max);
+            Normalize (Min, Max, Float'Value (Argument (2)), X (X'First .. Last));
+            Write (Argument (3), X (X'First .. Last));
+         end;
+
       when Commands.Show_Help =>
          Help;
+
       when others =>
-         Ada.Text_IO.Put_Line ("Unsupported command");
-         Help;
+         declare
+            use Ada.Text_IO;
+         begin
+            Put_Line ("Unsupported command");
+            Help;
+         end;
+
    end case;
 
-
-   null;
 end;
 
